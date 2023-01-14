@@ -13,9 +13,6 @@ ARG     MCROUTER_VERSION
 # Docker buildx, https://docs.docker.com/build/building/multi-platform/
 ARG TARGETPLATFORM
 
-ENV TARGETPLATFORM
-
-
 ENV     MCROUTER_DIR            /usr/local/mcrouter
 ENV     INSTALL_DIR             $MCROUTER_DIR/install
 ENV     SCRIPT_DIR              $MCROUTER_DIR/repo/mcrouter/mcrouter/scripts
