@@ -6,7 +6,6 @@
 
 FROM quay.io/almalinuxorg/almalinux:8 as builder
 
-
 ## Set desired version before building
 ARG     MCROUTER_VERSION
 

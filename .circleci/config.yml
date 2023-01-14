@@ -1,0 +1,85 @@
+---
+version: 2.1
+jobs:
+  release_docker:
+    machine:
+      image: ubuntu-2204:2022.10.2
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: Get branch name of latest release from official repo
+          command: |
+            curl -sL https://api.github.com/repos/patrickdung/mcrouter-container/tags | \
+              jq -r ".[].name" | grep -v rc | sort -r -V | head -n 1 > /tmp/latest-branch-name
+            echo "REMOTE_BRANCH_NAME=$(cat /tmp/latest-branch-name)" >> $BASH_ENV
+            cat /tmp/latest-branch-name
+            echo ${REMOTE_BRANCH_NAME}
+      - run:
+          name: CheckOut application code from Git to build
+          command:
+            git clone https://github.com/patrickdung/mcrouter-container
+      - run:
+          name: Get commit hash
+          working_directory: mcrouter
+          command: |
+            echo "COMMIT_HASH=$(git log --pretty=format:'%h' -n 1)" >> $BASH_ENV
+      - deploy:
+          name: Build container
+          working_directory: mcrouter
+          command: |
+            echo ${COMMIT_HASH}
+            pwd
+            ls -la ..
+            ls -la .
+            echo "$GITLAB_TOKEN" | docker login --username "$GITLAB_USERNAME" --password-stdin registry.gitlab.com
+            # To use squash, the daemon needs to enable experimental feature
+            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
+            sudo systemctl restart docker
+            DOCKER_CLI_EXPERIMENTAL=enabled docker build --squash \
+              -t registry.gitlab.com/patrickdung/docker-images/${CIRCLE_PROJECT_REPONAME}:${REMOTE_BRANCH_NAME} \
+              --build-arg REVISION_HASH=${COMMIT_HASH} \
+              --build-arg LABEL_IMAGE_URL=https://github.com/facebook/mcrouter \
+              --build-arg LABEL_IMAGE_SOURCE=${CIRCLE_REPOSITORY_URL} \
+               -f ../Dockerfile .
+            docker push registry.gitlab.com/patrickdung/docker-images/${CIRCLE_PROJECT_REPONAME}:${REMOTE_BRANCH_NAME}
+          no_output_timeout: 240m
+      - run:
+          name: Trigger GH action
+          command: |
+            curl -X POST -H "Accept: application/vnd.github.v3+json" \
+            -H "Authorization: Bearer ${GITHUB_DISPATCH_TOKEN}" \
+            https://api.github.com/repos/patrickdung/${CIRCLE_PROJECT_REPONAME}/dispatches \
+            -d '{"event_type":"build_container_completed"}'
+
+# filter_release will add the filters for a deploy job in a workflow to make it
+# only execute on a deploy related job.
+filter_release: &filter_release
+  filters:
+    branches:
+      only:
+        - main
+    tags:
+      only: /^v.*/
+
+# filter_tagged_release will add the filters for a deploy job in a workflow to
+# make it only execute on a tagged release.
+filter_tagged_release: &filter_tagged_release
+  filters:
+    branches:
+      ignore: /.*/
+    tags:
+      only: /^v.*/
+
+# filter_develop will add the filters for a development related commit.
+filter_develop: &filter_develop
+  filters:
+    branches:
+      ignore:
+        - main
+
+workflows:
+  build-test-deploy:
+    jobs:
+      - release_docker:
+          <<: *filter_release

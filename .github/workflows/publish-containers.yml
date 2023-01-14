@@ -66,7 +66,7 @@ jobs:
     outputs:
       remote_branch_name: ${{ steps.get-remote-branch-name.outputs.remote_branch_name }}
       container_digest_amd64: ${{ steps.get-container-digest-amd64.outputs.container_digest }}
-      container_digest_arm64: ${{ steps.get-container-digest-arm64.outputs.container_digest }}
+      #container_digest_arm64: ${{ steps.get-container-digest-arm64.outputs.container_digest }}
     steps:
       - name: Get branch name (tag) of latest release from official repo
         id: get-remote-branch-name
@@ -108,7 +108,8 @@ jobs:
             LABEL_IMAGE_URL=${{ env.ORIGINAL_SOURCECODE_URL }}
             LABEL_IMAGE_SOURCE=https://github.com/${{ github.repository }}
             MCROUTER_VERSION=main
-          platforms: linux/arm64,linux/amd64
+          #platforms: linux/arm64,linux/amd64
+          platforms: linux/amd64
           push: true
           tags: |
             ${{ needs.init-env.outputs.container_registry_base_uri }}:${{ env.REMOTE_BRANCH_NAME }}
@@ -120,12 +121,12 @@ jobs:
             jq -r '.manifests[] | select(.platform .architecture=="amd64" and .platform .os=="linux") | .digest' > /tmp/container-digest-amd64
           echo "container_digest=$(cat /tmp/container-digest-amd64)" >> $GITHUB_OUTPUT
 
-      - name: "Get the digest of container (arm64)"
-        id: get-container-digest-arm64
-        run: |
-          skopeo inspect --raw docker://${{needs.init-env.outputs.container_registry_base_uri}}:${{env.REMOTE_BRANCH_NAME}} | \
-            jq -r '.manifests[] | select(.platform .architecture=="arm64" and .platform .os=="linux") | .digest' > /tmp/container-digest-arm64
-          echo "container_digest=$(cat /tmp/container-digest-arm64)" >> $GITHUB_OUTPUT
+      #- name: "Get the digest of container (arm64)"
+      #  id: get-container-digest-arm64
+      #  run: |
+      #    skopeo inspect --raw docker://${{needs.init-env.outputs.container_registry_base_uri}}:${{env.REMOTE_BRANCH_NAME}} | \
+      #      jq -r '.manifests[] | select(.platform .architecture=="arm64" and .platform .os=="linux") | .digest' > /tmp/container-digest-arm64
+      #    echo "container_digest=$(cat /tmp/container-digest-arm64)" >> $GITHUB_OUTPUT
 
       - name: Use Cosign to sign the image recursively
         run: |
@@ -160,8 +161,8 @@ jobs:
         include:
           - arch: amd64
             platform_image_uri: "${{needs.init-env.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_amd64 }}"
-          - arch: arm64
-            platform_image_uri: "${{needs.init-env.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_arm64 }}"
+          #- arch: arm64
+          #  platform_image_uri: "${{needs.init-env.outputs.container_registry_base_uri}}@${{ needs.build-docker-image.outputs.container_digest_arm64 }}"
     steps:
       - name: Set env REMOTE_BRANCH_NAME
         run: |
