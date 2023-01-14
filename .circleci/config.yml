@@ -21,12 +21,12 @@ jobs:
             git clone https://github.com/patrickdung/mcrouter-container
       - run:
           name: Get commit hash
-          working_directory: mcrouter
+          #working_directory: mcrouter-container
           command: |
             echo "COMMIT_HASH=$(git log --pretty=format:'%h' -n 1)" >> $BASH_ENV
       - deploy:
           name: Build container
-          working_directory: mcrouter
+          #working_directory: mcrouter-container
           command: |
             echo ${COMMIT_HASH}
             pwd
@@ -41,7 +41,7 @@ jobs:
               --build-arg REVISION_HASH=${COMMIT_HASH} \
               --build-arg LABEL_IMAGE_URL=https://github.com/facebook/mcrouter \
               --build-arg LABEL_IMAGE_SOURCE=${CIRCLE_REPOSITORY_URL} \
-               -f ../Dockerfile .
+               -f ./Dockerfile .
             docker push registry.gitlab.com/patrickdung/docker-images/${CIRCLE_PROJECT_REPONAME}:${REMOTE_BRANCH_NAME}
           no_output_timeout: 240m
       - run:
