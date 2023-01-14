@@ -108,7 +108,7 @@ jobs:
             LABEL_IMAGE_URL=${{ env.ORIGINAL_SOURCECODE_URL }}
             LABEL_IMAGE_SOURCE=https://github.com/${{ github.repository }}
             MCROUTER_VERSION=main
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/arm64,linux/amd64
           push: true
           tags: |
             ${{ needs.init-env.outputs.container_registry_base_uri }}:${{ env.REMOTE_BRANCH_NAME }}

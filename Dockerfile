@@ -6,8 +6,15 @@
 
 FROM quay.io/almalinuxorg/almalinux:8 as builder
 
+
 ## Set desired version before building
 ARG     MCROUTER_VERSION
+
+# Docker buildx, https://docs.docker.com/build/building/multi-platform/
+ARG TARGETPLATFORM
+
+ENV TARGETPLATFORM
+
 
 ENV     MCROUTER_DIR            /usr/local/mcrouter
 ENV     INSTALL_DIR             $MCROUTER_DIR/install

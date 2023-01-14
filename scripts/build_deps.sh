@@ -6,6 +6,8 @@
 
 set -ex
 
+echo ${TARGETPLATFORM}
+
 ## Install deps
 dnf -y install epel-release \
                 dnf-plugins-core \
@@ -69,14 +71,25 @@ cd - && rm -rf ./boost
 
 ## Fmt
 git clone --branch "$FMT_VERSION" https://github.com/fmtlib/fmt.git fmt_lib
-cd fmt_lib && cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
+#cd fmt_lib && cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
+cd fmt_lib
+if [ $TARGETPLATFORM -eq "linux/arm64" ]; then
+  cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_SYSTEM_PROCESSOR="aarch64" -DCMAKE_LIBRARY_ARCHITECTURE="aarch64-linux-gnu" -DCMAKE_CROSSCOMPILING=TRUE
+else
+  cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
+fi
 make -j$(nproc) && make -j$(nproc) install
 cd - && rm -rf fmt_lib
 
 ## Snappy
 git clone --branch "$SNAPPY_VERSION" https://github.com/google/snappy.git snappy_lib
 cd snappy_lib && git submodule update --init
-mkdir build && cd build && cmake ../
+mkdir build && cd build 
+if [ $TARGETPLATFORM -eq "linux/arm64" ]; then
+  cmake -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_SYSTEM_PROCESSOR="aarch64" -                            DCMAKE_LIBRARY_ARCHITECTURE="aarch64-linux-gnu" -DCMAKE_CROSSCOMPILING=TRUE ../
+else
+  cmake ../
+fi
 make -j$(nproc) && make -j$(nproc) install
 cd "$SCRIPT_DIR"
 rm -rf snappy_lib
@@ -87,7 +100,12 @@ git clone --branch "$GFLAGS_VERSION" https://github.com/gflags/gflags.git gflags
 mkdir gflags/build && cd gflags/build
 export LDFLAGS="-Wl,-rpath=$INSTALL_DIR/lib,--enable-new-dtags -L$INSTALL_DIR/lib $LDFLAGS"
 export CPPFLAGS="-I$INSTALL_DIR/include -DGFLAGS_DLL_DECL='' $CPPFLAGS"
-cmake ../ -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DBUILD_SHARED_LIBS=ON
+if [ $TARGETPLATFORM -eq "linux/arm64" ]; then
+  cmake ../ -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DBUILD_SHARED_LIBS=ON \
+    -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_SYSTEM_PROCESSOR="aarch64" -                            DCMAKE_LIBRARY_ARCHITECTURE="aarch64-linux-gnu" -DCMAKE_CROSSCOMPILING=TRUE
+else
+  cmake ../ -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DBUILD_SHARED_LIBS=ON
+fi
 make -j$(nproc) && make -j$(nproc) install
 cd - && rm -rf gflags
 
