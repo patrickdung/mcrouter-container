@@ -82,6 +82,13 @@ cd - && rm -rf fmt_lib
 ## Snappy
 git clone --branch "$SNAPPY_VERSION" https://github.com/google/snappy.git snappy_lib
 cd snappy_lib && git submodule update --init
+# https://github.com/mhx/dwarfs/issues/56
+# https://github.com/google/snappy/blob/main/CMakeLists.txt
+#   # Disable RTTI.
+#  string(REGEX REPLACE "-frtti" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+cp -p CMakeLists.txt CMakeLists.txt.orig
+grep -v rtti CMakeLists.txt.orig > CMakeLists.txt
 mkdir build && cd build && cmake ../ \
     -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
     -DCMAKE_SYSTEM_PROCESSOR="aarch64" -DCMAKE_LIBRARY_ARCHITECTURE="aarch64-linux-gnu" \
