@@ -132,7 +132,7 @@ sed -i 's/LD_LIBRARY_PATH="/&$INSTALL_DIR\/lib64\:/g' "$SCRIPT_DIR/recipes/mcrou
 
 # patching specific for arm64
 sed -i \
-  's|cmake ..| cmake .. -DBUILD_SHARED_LIBS=TRUE -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" -DCMAKE_SYSTEM_PROCESSOR="aarch64" -DCMAKE_LIBRARY_ARCHITECTURE="aarch64-linux-gnu" -DCMAKE_CROSSCOMPILING=TRUE -DUSE_SSE=OFF|' \
+  's|cmake ..|cmake .. -DCMAKE_SYSTEM_PROCESSOR="aarch64" -DCMAKE_LIBRARY_ARCHITECTURE="aarch64-linux-gnu" -DUSE_SSE=OFF|' \
   "$SCRIPT_DIR/recipes/folly.sh"
 
 ## Pretend python 3 is installed (required for build)
