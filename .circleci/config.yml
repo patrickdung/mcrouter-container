@@ -42,7 +42,7 @@ jobs:
               --build-arg LABEL_IMAGE_URL=https://github.com/facebook/mcrouter \
               --build-arg LABEL_IMAGE_SOURCE=${CIRCLE_REPOSITORY_URL} \
               --build-arg MCROUTER_VERSION=main \
-               -f ./Dockerfile .
+               -f ./Dockerfile.arm64 .
             docker push registry.gitlab.com/patrickdung/docker-images/${CIRCLE_PROJECT_REPONAME}:${REMOTE_BRANCH_NAME}
           no_output_timeout: 240m
       - run:
