@@ -24,16 +24,19 @@ set -ex
 mkdir -p /var/mcrouter/stats
 mkdir -p /var/mcrouter/fifos
 mkdir -p /var/mcrouter/config
-chgrp -R 0 /var/mcrouter
-chmod -R g=u /var/mcrouter
+#chgrp -R 0 /var/mcrouter
+#chmod -R g=u /var/mcrouter
+chown -R 20000:20000 /var/mcrouter
 
 ## Create spooldir
 mkdir -p /var/spool/mcrouter
-chgrp -R 0 /var/spool/mcrouter
-chmod -R g=u /var/spool/mcrouter
+#chgrp -R 0 /var/mcrouter
+#chmod -R g=u /var/spool/mcrouter
+chown -R 20000:20000 /var/spool/mcrouter
 
 ## Make runnable from any context
 ln -s "$INSTALL_DIR/bin/mcrouter" /usr/bin/mcrouter
 echo "export LD_LIBRARY_PATH=\"$INSTALL_DIR/lib64:$INSTALL_DIR/lib:$LD_LIBRARY_PATH\"" >> /etc/profile.d/mcrouter_libs.sh
 chmod +x /etc/profile.d/mcrouter_libs.sh
 echo "export LD_PRELOAD=/usr/lib64/libjemalloc.so.2" >> ~/.bashrc
+echo "export LD_PRELOAD=/usr/lib64/libjemalloc.so.2" >> /home/mcrouter/.bashrc

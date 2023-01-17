@@ -61,7 +61,19 @@ RUN set -eux && \
     dnf --nodocs --setopt=install_weak_deps=0 --setopt=keepcache=0 \
       -y upgrade && \
     dnf clean all && \
-    rm -rf /var/cache/yum
+    rm -rf /var/cache/yum && \
+    groupadd \
+      --gid 20000 \
+      mcrouter && \
+    useradd --no-log-init \
+      --create-home \
+      --home-dir /home/mcrouter \
+      --shell /bin/bash \
+      --uid 20000 \
+      --gid 20000 \
+      --key MAIL_DIR=/dev/null \
+      mcrouter && \
+    chown -R mcrouter:mcrouter /home/mcrouter
 
 RUN     --mount=type=bind,target=/tmp/scripts,source=scripts /tmp/scripts/runtime_deps.sh $MCROUTER_DIR
 
@@ -69,3 +81,6 @@ ENV     LD_LIBRARY_PATH         "$INSTALL_DIR/lib64:$INSTALL_DIR/lib:$LD_LIBRARY
 
 ## Already added in the setup script
 ##ENV LD_PRELOAD=/usr/lib64/libjemalloc.so.2
+
+USER    mcrouter
+WORKDIR /home/mcrouter
