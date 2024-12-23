@@ -25,7 +25,7 @@ ENV     BISON_VERSION="v3.8.2"
 
 RUN     --mount=type=bind,target=/tmp/scripts,source=scripts /tmp/scripts/build_deps.sh $MCROUTER_DIR
 RUN     --mount=type=bind,target=/tmp/scripts,source=scripts /tmp/scripts/build.sh
-#RUN     cd /usr/local/mcrouter/install/bin && strip fizz fizz-bogoshim mcpiper mcrouter thrift1
+RUN     cd /usr/local/mcrouter/install/bin && strip fizz fizz-bogoshim mcpiper mcrouter thrift1
 
 FROM    quay.io/almalinuxorg/almalinux:8
 
